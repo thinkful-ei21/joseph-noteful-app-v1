@@ -3,6 +3,9 @@
 const express = require('express');
 const app = express();
 
+// Import the PORT value from config.js and set it equal to PORT
+const {PORT} = require('./config');
+
 // Load array of notes
 const data = require('./db/notes');
 
@@ -26,7 +29,7 @@ app.get('/api/notes/:id', (req, res) => {
   res.json(data.find(item => item.id === Number(req.params.id)));
 });
 
-app.listen(8080, function() {
+app.listen(PORT, function() {
   console.info(`Server listening on ${this.address().port}`);
 }).on('error', err => {
   console.error(err);
