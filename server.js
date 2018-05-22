@@ -19,30 +19,78 @@ const notes = simDB.initialize(data);
 
 
 
-// INSERT EXPRESS APP CODE HERE...
+/******* MIDDLEWARE *******/
 
 // Serve static files from public directory
 app.use(express.static('public'));
 
+// Middleware that parses incoming requests that contain JSON and makes them available on req.body
+app.use(express.json());
+
 // Middleware utilizing requestLogger for every route function (ie: log every request)
 // Can also use morgan to log
-// app.use(requestLogger);
-app.use(morgan('common'));
+app.use(requestLogger);
+// app.use(morgan('common'));
+
+
+
+/******* ENDPOINTS *******/
 
 // Response to request with all data unless provided with a searchTerm query
-app.get('/api/notes', (req, res) => {
+app.get('/api/notes', (req, res, next) => {
   const {searchTerm} = req.query;
-  if (searchTerm) {
-    res.json(data.filter(item => item.title.includes(searchTerm)));
-  } else {
-    res.json(data);
-  }
+  
+  notes.filter(searchTerm, (err, list) => {
+    if (err) {
+      return next(err); // hunts down the error handler ignoring all route functions that follow
+    }
+    res.json(list); // response with a JSONified filtered array
+  });
 });
 
 // Response to request with data.id matching req.params.id
-app.get('/api/notes/:id', (req, res) => {
-  res.json(data.find(item => item.id === Number(req.params.id)));
+app.get('/api/notes/:id', (req, res, next) => {
+
+  notes.find(req.params.id, (err, item) => {
+    if (err) {
+      return next(err);
+    }
+    if (item) {
+      res.json(item);
+    } else {
+      next();
+    }
+  });
 });
+
+
+// //
+app.put('/api/notes/:id', (req, res, next) => {
+  const id = req.params.id;
+
+  //Never trust users - validate input //
+  const updateObj = {};
+  const updateFields = ['title', 'content'];
+
+  updateFields.forEach(field => {
+    if (field in req.body) {
+      updateObj[field] = req.body[field];
+    }
+  });
+
+  notes.update(id, updateObj, (err, item) => {
+    if (err) {
+      return next(err);
+    }
+    if (item) {
+      res.json(item);
+    } else {
+      next();
+    }
+  });
+});
+
+/******* ERROR HANDLERS *******/
 
 // Error handler middleware
 app.use(function (req, res, next) {
