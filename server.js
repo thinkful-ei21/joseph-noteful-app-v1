@@ -14,8 +14,10 @@ const {requestLogger} = require('./middleware/logger');
 
 // Load array of notes
 const data = require('./db/notes');
+const simDB = require('./db/simDB');
+const notes = simDB.initialize(data);
 
-console.log('Hello Noteful!');
+
 
 // INSERT EXPRESS APP CODE HERE...
 
