@@ -9,20 +9,12 @@ const morgan = require('morgan');
 // Import the PORT value from config.js and set it equal to PORT
 const {PORT} = require('./config');
 
-// Import the requestLogger function from /middleware/logger.js
-// const {requestLogger} = require('./middleware/logger');
-
-// Load array of notes
-const data = require('./db/notes');
-const simDB = require('./db/simDB');
-const notes = simDB.initialize(data);
-
-
+// Import router
+const router = require('./router/notes.router');
 
 /******* MIDDLEWARE *******/
 
-// Use middleware, morgan, to log every requesdt
-// app.use(requestLogger);
+// Use middleware, morgan, to log every request regardless of endpoint
 app.use(morgan('dev'));
 
 // Serve static files from public directory
@@ -31,62 +23,8 @@ app.use(express.static('public'));
 // Middleware that parses incoming requests that contain JSON and makes them available on req.body
 app.use(express.json());
 
-
-
-/******* ENDPOINTS *******/
-
-// Response to request with all data unless provided with a searchTerm query
-app.get('/api/notes', (req, res, next) => {
-  const {searchTerm} = req.query;
-  
-  notes.filter(searchTerm, (err, list) => {
-    if (err) {
-      return next(err); // hunts down the error handler ignoring all route functions that follow
-    }
-    res.json(list); // response with a JSONified filtered array
-  });
-});
-
-// Response to request with data.id matching req.params.id
-app.get('/api/notes/:id', (req, res, next) => {
-
-  notes.find(req.params.id, (err, item) => {
-    if (err) {
-      return next(err);
-    }
-    if (item) {
-      res.json(item);
-    } else {
-      next();
-    }
-  });
-});
-
-// PLACEHOLDER COMMENT //
-app.put('/api/notes/:id', (req, res, next) => {
-  const id = req.params.id;
-
-  // Never trust users - validate input //
-  const updateObj = {};
-  const updateFields = ['title', 'content'];
-
-  updateFields.forEach(field => {
-    if (field in req.body) {
-      updateObj[field] = req.body[field];
-    }
-  });
-
-  notes.update(id, updateObj, (err, item) => {
-    if (err) {
-      return next(err);
-    }
-    if (item) {
-      res.json(item);
-    } else {
-      next();
-    }
-  });
-});
+// Mount the router
+app.use('/api', router);
 
 /******* ERROR HANDLERS *******/
 
