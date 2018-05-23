@@ -93,11 +93,7 @@ router.delete('/notes/:id', (req, res, next) => {
     if (err) {
       return next(err);
     }
-    if (item) {
-      res.json(item);
-    } else {
-      next();
-    }
+    res.sendStatus(204);
   });
 });
 
