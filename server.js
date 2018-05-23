@@ -10,7 +10,7 @@ const morgan = require('morgan');
 const {PORT} = require('./config');
 
 // Import the requestLogger function from /middleware/logger.js
-const {requestLogger} = require('./middleware/logger');
+// const {requestLogger} = require('./middleware/logger');
 
 // Load array of notes
 const data = require('./db/notes');
@@ -21,16 +21,15 @@ const notes = simDB.initialize(data);
 
 /******* MIDDLEWARE *******/
 
+// Use middleware, morgan, to log every requesdt
+// app.use(requestLogger);
+app.use(morgan('dev'));
+
 // Serve static files from public directory
 app.use(express.static('public'));
 
 // Middleware that parses incoming requests that contain JSON and makes them available on req.body
 app.use(express.json());
-
-// Middleware utilizing requestLogger for every route function (ie: log every request)
-// Can also use morgan to log
-app.use(requestLogger);
-// app.use(morgan('common'));
 
 
 
@@ -63,12 +62,11 @@ app.get('/api/notes/:id', (req, res, next) => {
   });
 });
 
-
-// //
+// PLACEHOLDER COMMENT //
 app.put('/api/notes/:id', (req, res, next) => {
   const id = req.params.id;
 
-  //Never trust users - validate input //
+  // Never trust users - validate input //
   const updateObj = {};
   const updateFields = ['title', 'content'];
 
